@@ -143,6 +143,9 @@ local_conf_header:
     # TODO: See discussion in https://github.com/secluso/os/issues/16
     INHERIT += "cve-check"
     require conf/distro/include/cve-extra-exclusions.inc
+    
+    INHERIT += "buildhistory"
+
 
     # This should ONLY be used for debugging the image. Otherwise, these should be removed.
     # Allows debugging via HDMI cable with root user with no password. 

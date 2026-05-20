@@ -14,7 +14,7 @@ LICENSE = "GPL-3.0-or-later"
 LIC_FILES_CHKSUM = "file://LICENSE;md5=b769fddc23425484f6d001e49426c2ee"
 
 # This is our own repository (set to an immutable commit)
-SRC_URI = "git://github.com/secluso/core.git;protocol=https"
+SRC_URI = "git://github.com/secluso/core.git;nobranch=1;protocol=https"
 SRCREV = "7bcbb4e4785fddab7f309b9535b29b98d54136fc"
 
 # Cargo fingerprints local path crates using their absolute source path
