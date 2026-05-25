@@ -9,7 +9,7 @@ Please see below on how to check reproducible builds.
 
 To build, run this command on x86-64 Linux from the meta-secluso-os directory:
 ```chatinput
-kas build build-pi-image.yml
+kas build pi-official-image.yml
 ```
 
 The image can be found after building running this from the meta-secluso-os directory:

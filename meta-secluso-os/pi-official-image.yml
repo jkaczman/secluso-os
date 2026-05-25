@@ -1,0 +1,167 @@
+# SPDX-License-Identifier: GPL-3.0-only
+# Copyright (C) 2026 Secluso, Inc.
+# Additional terms apply; see the NOTICE file in the repository root.
+
+# Referenced from kas documentation [https://kas.readthedocs.io/en/latest/userguide/project-configuration.html]
+
+# Every file needs to contain a header, that provides kas with information
+# about the context of this file.
+header:
+  # The `version` entry in the header describes for which configuration
+  # format version this file was created for. It is used by kas to figure
+  # out if it is compatible with this file. The version is an integer that
+  # is increased on every format change.
+  version: 2
+
+# Fingerprint obtained from https://wiki.yoctoproject.org/wiki/GPG_sign_notes_%26_git_tags
+# "Primary key fingerprint: 2AFB 13F2 8FBB B0D1 B9DA F630 87EB 3D32 FB63 1AD9"
+signers:
+  YoctoBuildandRelease:
+    fingerprint: 2AFB13F28FBBB0D1B9DAF63087EB3D32FB631AD9
+    gpg_keyserver: keyserver.ubuntu.com
+
+# The machine as it is written into the `local.conf` of bitbake.
+machine: raspberrypi0-2w-64
+# The distro name as it is written into the `local.conf` of bitbake.
+# Selects conf/distro/secluso.conf from meta-secluso-os.
+distro: secluso
+
+# We want as minimal of an image as possible to build on
+# We use 'secluso-image-minimal' to include our own recipes on top of core-image-minimal
+# Located in recipes-core/images/secluso-pi-image-minimal.bb
+target: secluso-pi-image-minimal
+repos:
+  # We create a layer for secluso-os.
+  # This allows us to use our own wic/ file. Additionally, we have conf/ if we need it.
+  secluso-os:
+    layers:
+      meta-secluso-os:
+
+  # We use bitbake, openembedded-core and meta-yocto here now instead of solely "poky"
+  # https://git.yoctoproject.org/poky/commit/?id=453df63af0c857c24804271da7f55691d0ed27f8
+  # The poky repository master branch is no longer being updated.
+  # The monolithic poky source arrangement approach is no longer recommended.
+  # Thus, the recommended approach is to use indiviudal clones of bitbake, oe-core and meta-yocto (a split approach).
+  # Thus, we mirror this [https://docs.yoctoproject.org/dev/dev-manual/poky-manual-setup.html] in the kas configuration
+  #
+  # We previously also pulled meta-yocto (for meta-poky and meta-yocto-bsp).
+  # meta-poky provided the "poky" reference distro, which we have replaced with our own conf/distro/secluso.conf.
+  # meta-yocto-bsp provides reference BSPs (qemu*, genericx86, beaglebone-yocto) that we do not target
+  # Our Pi BSP comes entirely from meta-raspberrypi.
+  # So meta-yocto is no longer needed.
+  bitbake:
+    url: "https://git.openembedded.org/bitbake"
+    commit: d6e45bad8e7b5bbae23307243a5e7ade147ba668 # Pinned to immutable (whinlatter) [https://git.openembedded.org/bitbake/tag/?h=yocto-5.3.3]
+    tag: yocto-5.3.3  # We additionally specify the tag to allow the signature to be verified
+    signed: true
+    allowed_signers:
+      - YoctoBuildandRelease
+    # The "." here is the root of the repository
+    # By disabling it, we tell kas we do not want the root added to bblayers.conf.
+    # Otherwise, kas would treat the repo root itself as a layer.
+    # We fetch this repo for the BitBake tool itself, not as a Yocto layer.
+    layers:
+      .: disabled
+
+  openembedded-core:
+    url: "https://git.openembedded.org/openembedded-core"
+    commit: d7d1e3068cb1bff9b3fcffb1f696ee7d6cd36ea4 # Pinned to immutable (whinlatter) [https://git.openembedded.org/openembedded-core/tag/?h=yocto-5.3.3]
+    tag: yocto-5.3.3 # We additionally specify the tag to allow the signature to be verified
+    signed: true
+    allowed_signers:
+      - YoctoBuildandRelease
+    # 'meta' is the OE-core layer directory within the openembedded-core repository
+    # It contains the core metadata / recipes that BitBake uses.
+    # See https://git.openembedded.org/openembedded-core/tree/meta
+    layers:
+      meta:
+
+  # TODO: meta-openembedded is pinned to an immutable commit, but unlike bitbake / oe-core, this is not signer-verified in kas
+  #       So we have a fixed origin but no signer-verification for source authenticity
+  #       There seems to be no current way to achieve this for this repository.
+  meta-openembedded:
+    url: "https://git.openembedded.org/meta-openembedded"
+    commit: 8bcdb0cc1dab116253b409e78fb868ced7d8397c # Pinned to immutable (whinlatter) [https://git.openembedded.org/meta-openembedded/commit/?h=whinlatter&id=8bcdb0cc1dab116253b409e78fb868ced7d8397c]
+    layers:
+      meta-oe:
+
+      # meta-networking depends on this
+      meta-python:
+
+      # This is included for Wi-Fi and hotspot support
+      meta-networking:
+
+      # This is included for libcamera recipe
+      meta-multimedia:
+
+  # TODO: meta-raspberrypi is pinned to an immutable commit, but unlike bitbake / oe-core, this is not signer-verified in kas
+  #       So we have a fixed origin but no signer-verification for source authenticity
+  #       There seems to be no current way to achieve this for this repository.
+  meta-raspberrypi:
+    url: "https://git.yoctoproject.org/meta-raspberrypi"
+    commit: 469e232c77d74cb030fe8a9af4ffe9127214a29b # Pinned to immutable (tag: whinlatter) (https://git.yoctoproject.org/meta-raspberrypi/commit/?h=whinlatter&id=469e232c77d74cb030fe8a9af4ffe9127214a29b)
+
+
+  meta-onnxruntime:
+     url: "https://github.com/NobuoTsukamoto/meta-onnxruntime"
+     commit: bf1f613ca4cc222955a7535daa221446e4b0668e
+
+
+# these are added to the head of the local.conf file
+local_conf_header:
+  secluso-os: |
+    # This is required to download the linux-firmware-rpidistro-bcm43430 for Synaptics WiFi/BT firmware blobs. 
+    # Note that this is actually not in the LICENSE anymore from them. See https://github.com/agherzan/meta-raspberrypi/issues/1453
+    # We will be able to remove this soon, and there is seemingly no longer a killswitch
+    LICENSE_FLAGS_ACCEPTED = "synaptics-killswitch"
+    
+    # meta-raspberrypi sets WKS_FILE with a weak assignment (?=), so we don't need a force override
+    # wks is a custom configuration script used by the wic tool to define the partitioning layout
+    # override theirs with our modified version
+    WKS_FILE:raspberrypi0-2w-64 = "sdcard-raspberrypi.wks"
+    
+    # Reference: https://wiki.yoctoproject.org/wiki/Reproducible_Builds
+    # These should be default values. We re-affirm them here to be safe.
+    BUILD_REPRODUCIBLE_BINARIES = "1"
+    PYTHONHASHSEED = "0"
+    PERL_HASH_SEED = "0"
+    TZ = 'UTC'
+    SOURCE_DATE_EPOCH = "1520598896"
+    REPRODUCIBLE_TIMESTAMP_ROOTFS = "1520598896"
+    
+    # We set this explicitly to 0.5.2 as that's what matches our current fork of rpicam-apps 
+    # Moreover, we have a libcaemra_0.5.2.bbappend in recipes-multimedia that overrides the SRC_URI (and SRCREV) to the Raspberry Pi patched version
+    # Version taken from https://github.com/raspberrypi/libcamera/releases
+    PREFERRED_VERSION_libcamera = "1:0.5.2+rpt20250903"
+    
+    # Generate a CVE report when we create an image
+    # TODO: Exclude kernel false positives: https://docs.yoctoproject.org/security-manual/vulnerabilities.html#linux-kernel-vulnerabilities
+    # TODO: See discussion in https://github.com/secluso/os/issues/16
+    INHERIT += "cve-check"
+    require conf/distro/include/cve-extra-exclusions.inc
+    
+    INHERIT += "buildhistory"
+
+    # Camera support (https://github.com/agherzan/meta-raspberrypi/blob/b83766291188efb956c475b09c9666c2dfe2cb69/recipes-bsp/bootfiles/rpi-config_git.bb#L223)
+    # Support the sensors for Camera Module V1 and V2.
+    # "camera_auto_detect" allows for either overlay (instead of forcing one) to be supported
+    RPI_EXTRA_CONFIG += "\ncamera_auto_detect=1\n"
+    VIDEO_CAMERA = "1"
+    # ENABLE_CAMERA is legacy; not libcamera affiliated
+    ENABLE_CAMERA = "0"
+    ENABLE_I2C = "1"
+    # Ensure the ov5647 & imx219 overlays are built and deployed to /boot/overlays/
+    KERNEL_DEVICETREE:append:raspberrypi0-2w-64 = " overlays/ov5647.dtbo"
+    KERNEL_DEVICETREE:append:raspberrypi0-2w-64 = " overlays/imx219.dtbo"
+
+    # Ensure the kernel modules are installed into the image. Needed to properly load in the camera into libcamera
+    # Not all kernel-modules need to be included for proper operation.
+    # TODO: Remove unnecesary kernel modules
+    IMAGE_INSTALL:append = " kmod i2c-tools kernel-modules"
+
+    # Referenced from https://hub.mender.io/t/how-to-configure-networking-using-systemd-in-yocto-project/1097
+    # This installs the necessary firmware to connect to WiFi. See LICENSE_FLAGS_ACCEPTED for a relevant discussion.
+    IMAGE_INSTALL:append = " linux-firmware-rpidistro-bcm43430 "
+
+    # Cargo needs this or it fails to fetch dependencies
+    FETCHCMD_wget = "/usr/bin/env wget -t 2 -T 30 --user-agent='bitbake/2.0'"
