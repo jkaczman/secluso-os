@@ -9,22 +9,36 @@ The benefits of this OS over Raspberry Pi OS Lite are:
 
 There is substantial work left to complete the long-term goals of this repository. Notably, some things to-do are regular OS updates to patch CVEs via A/B, hardening the kernel, continue stripping out un-used parts of the OS, etc. 
 
+### Check at any time that your SD card is running official Secluso OS (not in latest release)
 
-Please see below on how to check reproducible builds.
+We provide an easy way to check that your SD card is running an official Secluso OS image!
+
+**This was made for macOS and Linux**. On Windows, the steps are very similar, but you would need to find some way to install dd and hash the output test.bin. Windows has "cygwin" to help with this.
+
+1. Take out your SD card
+2. Plug it into your laptop or computer
+3. Determine the device identifier (we recommend using https://github.com/Canop/dysk) - you should see a disk that is labeled as "removable" and has at least two partitions visible, "boot" and "provision". Look at the number that comes **right after** "disk". You'll need to use this in the next step.
+4. Run the command sudo dd if=/dev/diskPLACEHOLDER of=test.bin 
+   5. If on macOS, PLACEHOLDER will be your disk number from #3 with s2 at the end (e.g. disk6s2 if the disk number was 6)
+   6. If on Linux, PLACEHOLDER will be your disk number from #3 with p2 at the end (e.g. disk6p2 if the disk number was 6)
+5. Run sha256sum test.bin
+6. Compare the output to our released squashfs file in this repository's releases. 
+
+### Check that our release matches a local build (reproducible builds)
 
 To build, run this command on x86-64 Linux from the meta-secluso-os directory:
-```chatinput
+```bash
 kas build pi-official-image.yml
 ```
 
 The image can be found after building running this from the meta-secluso-os directory:
-```chatinput
+```bash
 cd build/tmp/deploy/images/raspberrypi0-2w-64
 bunzip2 -f secluso-pi-image-minimal-raspberrypi0-2w-64.rootfs.wic.bz2
 ```
 
 **To check that our released image is reproducible**, obtain a fresh image from above, and then compare to our released image file:
-```chatinput
+```bash
 diff (our released image.wic) secluso-pi-image-minimal-raspberrypi0-2w-64.rootfs.wic
 ```
 
