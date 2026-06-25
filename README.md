@@ -44,5 +44,9 @@ diff (our released image.wic) secluso-pi-image-minimal-raspberrypi0-2w-64.rootfs
 
 If they don't match, please make sure you've checked out the tag corresponding to the release.
 
+## References / Credits
+- Raspberry Pi A/B bootloader backend using autoboot.txt and tryboot: https://github.com/Rtone/raspberrypi-firmware-rauc-bootloader-backend
+
+## Notice
 This repository is licensed under GPL-3.0. See LICENSE, COPYRIGHT, and
 NOTICE for the applicable copyright and additional notice-preservation terms.

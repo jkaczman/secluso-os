@@ -58,6 +58,7 @@ python do_unpack:append() {
 do_install:append() {
     install -d ${D}/${systemd_unitdir}/system
     install -m 0644 ${UNPACKDIR}/secluso_updater.service ${D}/${systemd_unitdir}/system
+    install -m 0644 ${UNPACKDIR}/bootloader_backend ${D}/${sbindir}
 }
 
 # https://docs.yoctoproject.org/dev/ref-manual/classes.html#cargo-update-recipe-crates
