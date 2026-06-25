@@ -18,6 +18,7 @@ RDEPENDS:${PN} = " \
     rpicam-apps-fork \
     secluso-camera-hub \
     secluso-management \
+    secluso-updater \
     parted \
     e2fsprogs-resize2fs \
     e2fsprogs-e2fsck \
